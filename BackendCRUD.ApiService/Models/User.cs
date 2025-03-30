@@ -15,6 +15,7 @@ namespace BackendCRUD.ApiService.Models
         public string Email { get; set; }
         [Required]
         public string NumeroTelefono { get; set; }
+        [Required]
         public DateTime Cumpleaños { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
