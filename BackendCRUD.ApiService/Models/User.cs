@@ -20,6 +20,19 @@ namespace BackendCRUD.ApiService.Models
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        //propiedades de autenticacion
+
+        public string Password { get; set; }
+        public string Salt {  get; set; } //dato aleatorio para cada usuario
+        public string? VerificationToken { get; set; } //token de verificacion
+        public DateTime? VerifiDate { get; set; } //fecha y hora cuando el usuario verifico su email
+        public string? PasswordResetToken { get; set; } //token de restablecimiento de contraseña
+        public DateTime? ResetTokenExpires { get; set; } //fecha y hora cuando el token de restablecimiento de contraseña expira
+
+
+
     }
+
+
 }
 
