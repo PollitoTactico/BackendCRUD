@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BackendCRUD.ApiService.Models;
 using BackendCRUD.ApiService.Data;
+using Microsoft.AspNetCore.Cors;
 
-
+[EnableCors("AllowAll")]
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController : ControllerBase

@@ -8,9 +8,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BackendCRUD.ApiService.Services;
+using Microsoft.AspNetCore.Cors;
 
 namespace BackendCRUD.ApiService.Controllers
 {
+    [EnableCors("AllowAll")]
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -44,7 +46,7 @@ namespace BackendCRUD.ApiService.Controllers
                     Email = request.Email,
                     NumeroTelefono = request.NumeroTelefono,
                     Cumpleaños = request.Cumpleaños,
-                    IsActive = true,
+                    IsActive = false, // Cambiado a false hasta verificación
                     Password = passwordHash,
                     Salt = Convert.ToBase64String(salt),
                     VerificationToken = verificationToken,
@@ -58,11 +60,9 @@ namespace BackendCRUD.ApiService.Controllers
 
                     await _emailService.SendVerificationEmail(user.Email, verificationToken);
 
-                   
-
                     return Ok(new
                     {
-                        message = "Usuario registrado exitosamente, Revise su correo para verificar la cuenta",
+                        message = "Pre-registro exitoso. Revise su correo para verificar la cuenta",
                         token = verificationToken,
                         user = new
                         {
@@ -91,7 +91,7 @@ namespace BackendCRUD.ApiService.Controllers
                 if (user == null)
                     return BadRequest("Usuario no encontrado.");
 
-                if (user.VerificationToken != null)
+                if (!user.IsActive)
                     return BadRequest("Por favor verifica tu email primero.");
 
                 var salt = Convert.FromBase64String(user.Salt);
@@ -100,9 +100,13 @@ namespace BackendCRUD.ApiService.Controllers
                 if (user.Password != passwordHash)
                     return BadRequest("Contraseña incorrecta.");
 
+                // Crear y devolver el token JWT
+                var token = CreateToken(user);
+
                 return Ok(new
                 {
                     message = "Login exitoso",
+                    token = token,
                     user = new
                     {
                         id = user.Id,
@@ -165,13 +169,14 @@ namespace BackendCRUD.ApiService.Controllers
 
                 user.VerifiDate = DateTime.Now;
                 user.VerificationToken = null;
+                user.IsActive = true; // Activamos el usuario después de verificar
 
                 await _context.SaveChangesAsync();
                 return Ok("Usuario verificado exitosamente");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return StatusCode(500, $"Error en verificación: {ex.Message}");
             }
         }
 

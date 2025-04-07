@@ -17,10 +17,11 @@ namespace BackendCRUD.ApiService.Models
         public string NumeroTelefono { get; set; }
         [Required]
         public DateTime Cumpleaños { get; set; }
-        public bool IsActive { get; set; }
+        [Required]
+        public bool IsVerified { get; set; } = false; 
+        public bool IsActive { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        //propiedades de autenticacion
 
         public string Password { get; set; }
         public string Salt {  get; set; } //dato aleatorio para cada usuario
