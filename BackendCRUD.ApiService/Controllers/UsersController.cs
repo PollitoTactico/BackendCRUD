@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BackendCRUD.ApiService.Models;
 using BackendCRUD.ApiService.Data;
 using Microsoft.AspNetCore.Cors;
+using Org.BouncyCastle.Crypto.Generators;
 
 [EnableCors("AllowAll")]
 [Route("api/[controller]")]
@@ -38,28 +39,58 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public async
-        Task<ActionResult<User>> CreateUser(User user)
+    public async Task<ActionResult<User>> CreateUser(CreateUserDto createUserDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
+
+        var user = new User
+        {
+            FirstName = createUserDto.FirstName,
+            LastName = createUserDto.LastName,
+            Email = createUserDto.Email,
+            NumeroTelefono = createUserDto.NumeroTelefono,
+            Cumpleaños = createUserDto.Cumpleaños,
+            IsActive = createUserDto.IsActive,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var (hash, salt) = HashPassword(createUserDto.Password);
+        user.Password = hash;
+        user.Salt = salt;
+
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(int id, User user)
+    private (string hash, string salt) HashPassword(string password)
     {
-        if (id != user.Id)
+        string salt = BCrypt.Net.BCrypt.GenerateSalt(12);
+        string hash = BCrypt.Net.BCrypt.HashPassword(password, salt);
+        return (hash, salt);
+    }
+
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
         {
-            return BadRequest();
+            return NotFound();
         }
 
-        _context.Entry(user).State = EntityState.Modified;
+        // Actualiza solo informacion basica
+        user.FirstName = updateUserDto.FirstName;
+        user.LastName = updateUserDto.LastName;
+        user.Email = updateUserDto.Email;
+        user.NumeroTelefono = updateUserDto.NumeroTelefono;
+        user.Cumpleaños = updateUserDto.Cumpleaños;
+        user.IsActive = updateUserDto.IsActive;
 
         try
         {
