@@ -28,6 +28,7 @@ namespace BackendCRUD.ApiService.Controllers
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto request)
+
         {
             try
             {

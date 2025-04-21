@@ -9,7 +9,7 @@ namespace BackendCRUD.ApiService.Data
         public ApplicationDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=BackendCRUD;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=tcp:usercrudserverpancho.database.windows.net,1433;Initial Catalog=MVCNextjs;Persist Security Info=False;User ID=panchoadmin;Password=248956103JFz;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
