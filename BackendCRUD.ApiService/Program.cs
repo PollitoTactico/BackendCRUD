@@ -17,12 +17,16 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-                .WithOrigins("https://front-crud-ince.vercel.app")
+                .WithOrigins(
+                    "https://front-crud-ince.vercel.app",
+                    "http://localhost:3000"
+                )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
         });
 });
+
 
 var app = builder.Build();
 
