@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using BackendCRUD.ApiService.Services;
 using Microsoft.AspNetCore.Cors;
+using Org.BouncyCastle.Math;
 
 namespace BackendCRUD.ApiService.Controllers
 {
@@ -33,7 +34,7 @@ namespace BackendCRUD.ApiService.Controllers
             try
             {
                 if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                    return BadRequest("El usuario ya existe.");
+                    return BadRequest(new { message = "El usuario ya existe." });
 
                 var salt = GenerateSalt();
                 var passwordHash = HashPassword(request.Contraseña, salt);
@@ -47,7 +48,7 @@ namespace BackendCRUD.ApiService.Controllers
                     Email = request.Email,
                     NumeroTelefono = request.NumeroTelefono,
                     Cumpleaños = request.Cumpleaños,
-                    IsActive = false, // Cambiado a false hasta verificación
+                    IsActive = false, 
                     Password = passwordHash,
                     Salt = Convert.ToBase64String(salt),
                     VerificationToken = verificationToken,
@@ -90,16 +91,16 @@ namespace BackendCRUD.ApiService.Controllers
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
                 if (user == null)
-                    return BadRequest("Usuario no encontrado.");
+                    return BadRequest (new { message = "Usuario no encontrado." });
 
                 if (!user.IsActive)
-                    return BadRequest("Por favor verifica tu email primero.");
+                    return BadRequest(new { message = "Por favor verifica tu email primero." });
 
                 var salt = Convert.FromBase64String(user.Salt);
                 var passwordHash = HashPassword(request.Contraseña, salt);
 
                 if (user.Password != passwordHash)
-                    return BadRequest("Contraseña incorrecta.");
+                    return BadRequest(new { message = "Contraseña incorrecta." });
 
                 // Crear y devolver el token JWT
                 var token = CreateToken(user);
