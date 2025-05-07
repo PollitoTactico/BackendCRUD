@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 builder.Services.AddCors(options =>
 {

@@ -5,7 +5,7 @@ using BackendCRUD.ApiService.Models;
 using BackendCRUD.ApiService.Data;
 using Microsoft.AspNetCore.Cors;
 using Org.BouncyCastle.Crypto.Generators;
-
+        
 [EnableCors("AllowAll")]
 [Route("api/[controller]")]
 [ApiController]
@@ -19,7 +19,7 @@ public class UsersController : ControllerBase
     {
         _context = context;
     }
-    [HttpGet]
+    [HttpGet]   
     public async
         Task<ActionResult<IEnumerable<User>>> GetUsers()
     {
