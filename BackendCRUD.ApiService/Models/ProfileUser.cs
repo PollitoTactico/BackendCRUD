@@ -13,7 +13,5 @@
         public string Experiencia { get; set; } 
         public string FuncionesEsenciales { get; set; }
         public string ConocimientoTecnologico { get; set; }
-
-
     }
 }

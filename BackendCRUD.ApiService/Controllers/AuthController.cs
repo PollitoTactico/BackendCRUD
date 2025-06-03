@@ -13,7 +13,6 @@ using Org.BouncyCastle.Math;
 
 namespace BackendCRUD.ApiService.Controllers
 {
-    [EnableCors("AllowAll")]
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase

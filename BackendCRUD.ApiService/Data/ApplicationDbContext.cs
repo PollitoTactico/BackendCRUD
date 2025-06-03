@@ -12,6 +12,7 @@ namespace BackendCRUD.ApiService.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<ProfileUser> ProfileUsers { get; set; }
+        public DbSet<Curriculum> Curriculum { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
