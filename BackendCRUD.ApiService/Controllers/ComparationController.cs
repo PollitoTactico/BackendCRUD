@@ -1,9 +1,10 @@
 ﻿using BackendCRUD.ApiService.DTOs.Comparation;
-using BackendCRUD.ApiService.Repository;
+using BackendCRUD.ApiService.Repository;  
 using BackendCRUD.ApiService.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BackendCRUD.ApiService.Controllers

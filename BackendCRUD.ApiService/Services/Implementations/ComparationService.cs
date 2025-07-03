@@ -5,19 +5,23 @@ using BackendCRUD.ApiService.Extensions;
 using BackendCRUD.ApiService.Services.Interfaces;
 using BackendCRUD.ApiService.Repository;
 using Microsoft.EntityFrameworkCore;
-using System.Linq; // Asegúrate de importar el repositorio
+using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace BackendCRUD.ApiService.Services.Implementations
 {
     public class ComparationService : IComparationService
     {
+        private static ComparationService _instance;
+        private static readonly object _lock = new object();  // Asegura que solo se cree una instancia
         private readonly ProfileUserRepository _profileUserRepository;
         private readonly IPdfTextExtractor _pdfTextExtractor;
         private readonly IKeywordProcessor _keywordProcessor;
         private readonly ICVService _cvService;
         private readonly ILogger<ComparationService> _logger;
 
-        public ComparationService(
+        // Constructor privado para evitar instanciación fuera de la clase
+        private ComparationService(
             ProfileUserRepository profileUserRepository,  // Repositorio para obtener perfiles
             IPdfTextExtractor pdfTextExtractor,
             IKeywordProcessor keywordProcessor,
@@ -31,11 +35,28 @@ namespace BackendCRUD.ApiService.Services.Implementations
             _logger = logger;
         }
 
+        // Método para obtener la instancia única
+        public static ComparationService Instance(
+            ProfileUserRepository profileUserRepository,
+            IPdfTextExtractor pdfTextExtractor,
+            IKeywordProcessor keywordProcessor,
+            ICVService cvService,
+            ILogger<ComparationService> logger)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new ComparationService(profileUserRepository, pdfTextExtractor, keywordProcessor, cvService, logger);
+                }
+            }
+            return _instance;
+        }
+
         public async Task<ComparationResponseDTO> CompareProfileWithCVs(ComparationRequestDTO request)
         {
             try
             {
-                // 1. Obtener el perfil desde el repositorio
                 var profile = await _profileUserRepository.GetProfileByIdAsync(request.ProfileId);
 
                 if (profile == null)
@@ -44,11 +65,9 @@ namespace BackendCRUD.ApiService.Services.Implementations
                     throw new KeyNotFoundException($"Perfil con ID {request.ProfileId} no encontrado");
                 }
 
-                // 2. Extraer keywords del perfil
                 var weightedKeywords = _keywordProcessor.ExtractKeywords(profile);
                 var totalPossibleScore = weightedKeywords.Sum(k => k.Weight);
 
-                // 3. Obtener CVs del servicio en memoria
                 var cvs = _cvService.GetCVs(request.CvIds);
 
                 if (!cvs.Any())
@@ -58,7 +77,6 @@ namespace BackendCRUD.ApiService.Services.Implementations
 
                 foreach (var cv in cvs)
                 {
-                    // 4. Extraer texto del PDF si no está extraído
                     if (string.IsNullOrEmpty(cv.TextoExtraido))
                         cv.TextoExtraido = await _pdfTextExtractor.ExtractText(cv.PDFCurriculum);
 
@@ -66,7 +84,6 @@ namespace BackendCRUD.ApiService.Services.Implementations
                     var matchedKeywords = new List<KeywordWeightDTO>();
                     double totalScore = 0;
 
-                    // 5. Buscar coincidencias de keywords
                     foreach (var keyword in weightedKeywords)
                     {
                         if (cvText.Contains(keyword.Keyword) || cvText.Contains(keyword.Keyword.StemWord()))
@@ -80,10 +97,8 @@ namespace BackendCRUD.ApiService.Services.Implementations
                         }
                     }
 
-                    // 6. Calcular el porcentaje de coincidencia
                     var percentage = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 100 : 0;
 
-                    // 7. Obtener palabras frecuentes del texto del CV
                     var frequentWords = GetMostFrequentWords(cvText, 10);
 
                     results.Add(new ComparationResultDTO
@@ -96,7 +111,7 @@ namespace BackendCRUD.ApiService.Services.Implementations
                             .Select(k => new KeywordWeightDTO { Keyword = k.Keyword, Weight = k.Weight })
                             .OrderByDescending(k => k.Weight)
                             .ToList(),
-                        FrequentWords = frequentWords // Agregar palabras frecuentes aquí
+                        FrequentWords = frequentWords 
                     });
                 }
 
@@ -113,7 +128,6 @@ namespace BackendCRUD.ApiService.Services.Implementations
             }
         }
 
-        // Método para obtener las palabras más frecuentes de varios CVs
         public async Task<List<KeywordWeightDTO>> GetMostFrequentWordsFromCVs(List<int> cvIds, int top = 10)
         {
             var cvs = _cvService.GetCVs(cvIds);
