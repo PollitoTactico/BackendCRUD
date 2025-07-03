@@ -3,27 +3,28 @@ using BackendCRUD.ApiService.DTos.Comparation;
 using BackendCRUD.ApiService.DTOs.Comparation;
 using BackendCRUD.ApiService.Extensions;
 using BackendCRUD.ApiService.Services.Interfaces;
+using BackendCRUD.ApiService.Repository;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using System.Linq; // Asegúrate de importar el repositorio
 
 namespace BackendCRUD.ApiService.Services.Implementations
 {
     public class ComparationService : IComparationService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ProfileUserRepository _profileUserRepository;
         private readonly IPdfTextExtractor _pdfTextExtractor;
         private readonly IKeywordProcessor _keywordProcessor;
         private readonly ICVService _cvService;
         private readonly ILogger<ComparationService> _logger;
 
         public ComparationService(
-            ApplicationDbContext context,
+            ProfileUserRepository profileUserRepository,  // Repositorio para obtener perfiles
             IPdfTextExtractor pdfTextExtractor,
             IKeywordProcessor keywordProcessor,
             ICVService cvService,
             ILogger<ComparationService> logger)
         {
-            _context = context;
+            _profileUserRepository = profileUserRepository;
             _pdfTextExtractor = pdfTextExtractor;
             _keywordProcessor = keywordProcessor;
             _cvService = cvService;
@@ -34,10 +35,8 @@ namespace BackendCRUD.ApiService.Services.Implementations
         {
             try
             {
-                // 1. Obtener el perfil de la base de datos
-                var profile = await _context.ProfileUsers
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.id == request.ProfileId);
+                // 1. Obtener el perfil desde el repositorio
+                var profile = await _profileUserRepository.GetProfileByIdAsync(request.ProfileId);
 
                 if (profile == null)
                 {
