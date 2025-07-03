@@ -9,6 +9,25 @@ API Web desarrollada en .NET Core para la gestión de usuarios con operaciones C
 - SQL Server
 - ASP.NET Core Web API
 
+## Patrones de Diseño Implementados
+
+### **Patrón Singleton**
+
+En el `ComparationService`, implementamos el patrón **Singleton** para asegurar que solo exista **una única instancia** del servicio durante la vida útil de la aplicación. Esto optimiza el uso de recursos y asegura que no haya inconsistencias en el estado del servicio al tener múltiples instancias.
+
+1. **Instancia única**: Se creó una instancia estática del servicio que se accede a través de un método `Instance()`.
+2. **Constructor privado**: El constructor de `ComparationService` es privado para evitar la creación de nuevas instancias desde fuera de la clase.
+3. **Acceso global**: La instancia del servicio es accesible desde cualquier parte de la aplicación sin necesidad de recrearla.
+
+### **Patrón Proxy**
+
+El patrón **Proxy** se aplica al servicio `ICVService` mediante el `CVServiceProxy`. Este patrón permite añadir funcionalidades adicionales como **cacheo** y **logging** al servicio original, sin modificar el servicio real.
+
+1. **Cacheo**: Los resultados de las operaciones `GetCV` se almacenan en memoria, mejorando la eficiencia al evitar consultas repetidas.
+2. **Logging**: Cada operación en el servicio (agregar, obtener o eliminar CVs) es registrada en los logs, lo que facilita el monitoreo de la aplicación.
+3. **Extensibilidad**: Se pueden agregar más decoradores (proxies) sin afectar el servicio original, permitiendo la inclusión de más responsabilidades como validación o control de acceso.
+
+
 ## Endpoints de la API
 
 ### Usuarios
